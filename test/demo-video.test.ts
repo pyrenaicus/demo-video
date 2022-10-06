@@ -1,11 +1,11 @@
 import { html } from 'lit';
 import { fixture, expect } from '@open-wc/testing';
 
-import { DemoVideoApp } from '../src/components/app/demo-video-app.js';
+import { DemoVideo } from '../src/demo-video.js';
 // import '../src/demo-video.js';
 
 describe('DemoVideo', () => {
-  let element: DemoVideoApp;
+  let element: DemoVideo;
   beforeEach(async () => {
     element = await fixture(html`<demo-video-app></demo-video-app>`);
   });
