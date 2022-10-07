@@ -21,35 +21,35 @@ const appStyle = css`
     flex-grow: 1;
   }
 
+  #video-container {
+    margin: auto;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: 180 1fr;
+    place-items: center;
+  }
+
   video {
+    grid-area: 1 / 1 / 2 / 2;
     width: 320px;
     height: 180px;
-    background: gold;
+    background: grey;
   }
   canvas {
+    grid-area: 1 / 1 / 2 / 2;
+    display: none;
     width: 320px;
     height: 180px;
-    background: pink;
+    background: grey;
     margin: 1rem 0;
+  }
+  #btn-container {
+    margin-bottom: 5em;
   }
 `;
 @customElement('demo-video')
 export class DemoVideo extends LitElement {
   static styles = appStyle;
-
-  @state()
-  private _constrains = {
-    audio: false,
-    video: { width: 320, height: 180, frameRate: { ideal: 25, max: 30 } },
-  };
-
-  @property({ type: String }) title = 'My app';
-
-  @property()
-  isVideoOn: boolean = false;
-
-  @property()
-  isBlurOn: boolean = false;
 
   @query('#video')
   video!: HTMLVideoElement;
@@ -57,25 +57,56 @@ export class DemoVideo extends LitElement {
   @query('#canvas')
   canvas!: HTMLVideoElement;
 
+  @state()
+  private _constrains = {
+    audio: false,
+    video: { width: 320, height: 180, frameRate: { ideal: 25, max: 30 } },
+  };
+
+  @property({ type: String }) title = 'video blur demo';
+
+  @property()
+  isVideoOn: boolean = false;
+
+  @property()
+  isBlurOn: boolean = false;
+
+  @property({
+    hasChanged: (newVal: boolean, oldVal: boolean) => {
+      return true;
+    },
+  })
+  segmentationReady: boolean = false;
+
   render() {
     return html`
-      <h1>${this.title}</h1>
-      <p>Edit <code>src/DemoVideo.ts</code> and save to reload.</p>
+      <h3>${this.title}</h3>
 
-      <video id="video"></video>
-      <canvas id="canvas"></canvas>
-      <button id="btn-video" @click=${this.videoCapture}>
-        ${this.isVideoOn ? 'stop video' : 'start video'}
-      </button>
-      <button id="btn-blur" @click=${this.startBlur}>
-        ${this.isBlurOn ? 'unblur' : 'Blurrr'}!
-      </button>
+      <div id="video-container">
+        <video id="video"></video>
+        <canvas id="canvas"></canvas>
+      </div>
+      <div id="btn-container">
+        <button id="btn-video" @click=${this.videoCapture}>
+          ${this.isVideoOn ? 'stop video' : 'start video'}
+        </button>
+        <button id="btn-blur" @click=${this.startBlur}>
+          ${this.isBlurOn ? 'unblur' : 'Blurrr'}!
+        </button>
+      </div>
     `;
+  }
+
+  change() {
+    this.video.style.display = 'none';
   }
 
   startBlur() {
     this.isBlurOn = !this.isBlurOn;
     this.startSegmentation();
+
+    this.video.style.display = 'none';
+    this.canvas.style.display = 'block';
   }
 
   async videoCapture() {
@@ -95,6 +126,10 @@ export class DemoVideo extends LitElement {
     videoElement.srcObject = stream;
     videoElement.play();
   }
+
+  // async isSegmentationReady(){
+
+  // }
 
   async startSegmentation() {
     console.log(this.video.width);
@@ -125,5 +160,6 @@ export class DemoVideo extends LitElement {
       .load()
       .then(net => performSegmentation(net))
       .catch(err => console.log(err));
+    this.segmentationReady = true;
   }
 }
